@@ -20,18 +20,17 @@ pattern B a x b = N Black a x b
 -- results
 --
 
-data Res a b = D a | T b
-type Result a = Res a a
+type Result a = Result' a a
+data Result' a b = D a | T b
 
-instance Functor (Res a) where
+instance Functor (Result' a) where
   fmap = liftM
 
-instance Applicative (Res a) where
-  pure  = return
+instance Applicative (Result' a) where
+  pure  = T
   (<*>) = ap
 
-instance Monad (Res a) where
-  return x = T x
+instance Monad (Result' a) where
   (D x) >>= f = D x
   (T x) >>= f = f x
 
@@ -103,8 +102,8 @@ blacken' (R a y b) = D (B a y b)
 blacken' s = T s
 
 eqL :: Tree a -> Result (Tree a)
-eqL (N k a y (B c z d)) = balance' (N k a y (R c z d))
-eqL (N k a y (R c z d)) = (\a -> B a z d) <$$> eqL (R a y c)
+eqL (N k a x (B b y c)) = balance' (N k a x (R b y c))
+eqL (N k a x (R b y c)) = (\a -> B a y c) <$$> eqL (R a x b)
 
 eqR :: Tree a -> Result (Tree a)
 eqR (N k (B a x b) y c) = balance' (N k (R a x b) y c)
